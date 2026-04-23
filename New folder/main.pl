@@ -17,6 +17,7 @@ valid_license(10000004).
 vehicle_multiplier(car, 1).
 vehicle_multiplier(bus, 1.5).
 vehicle_multiplier(lorry, 2).
+vehicle_multiplier(bike, 0.5).
 
 % Violations: violation(Name, Base_Fine, Severity, Credit_Deduction)
 violation(speeding, 3000, low, 2).
@@ -59,7 +60,7 @@ start :-
     
     (check_license(L_Num) ->
         write('Enter Vehicle Number (e.g. wp_cad_1234.): '), read(V_Num),
-        write('Enter Vehicle Type (car, bus, lorry.): '), read(V_Type),
+        write('Enter Vehicle Type (bike, car, bus, lorry.): '), read(V_Type),
         
         assertz(current_license(L_Num)),
         assertz(current_vehicle(V_Num)),
@@ -79,6 +80,14 @@ show_violations :-
     
     write('Enter the Violation Name : '), read(Offense),
     generate_report(Offense).
+
+    % cheking no_helmet violation (its only for bike) ~new added part
+   generate_report(no_helmet) :-
+    current_type(V_Type),
+    V_Type \== bike, 
+    write('Error: "no_helmet" violation is ONLY for bikes!'), nl,
+    show_violations. % (Recursion)
+
 
 generate_report(Offense) :-
     (violation(Offense, BaseFine, Severity, Penalty) ->
