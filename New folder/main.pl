@@ -26,13 +26,20 @@ violation(drunk_driving, 25000, high, 10).
 violation(no_helmet, 2000, low, 1).
 
 %  3. Core Logic 
-% License validation rule
-check_license(L_Num) :-
-    valid_license(L_Num),
-    write('License verified. Valid License in Sri Lanka.'), nl.
-check_license(_) :-
-    write('Error: Incorrect License Number! (Must be a registered 8-digit number).'), nl, fail.
 
+check_license(L_Num) :-
+    repeat,
+    write('Enter License Number (8 digits, e.g. 10023456.): '), 
+    read(L_Num),
+    (   valid_license(L_Num) ->
+        write('License verified. Valid License in Sri Lanka.'), nl, !
+    ;   nl,
+        write('Error: Incorrect License Number!'), nl,
+        write('Invalid Input: '), write(L_Num), nl,
+        write('(Must be a registered 8-digit number)'), nl, nl,
+        write('Please try again.'), nl, nl,
+        fail
+    ).
 % Credit and Validity check
 check_status(Credits) :-
     Credits > 0,
@@ -55,21 +62,17 @@ start :-
 
     write('--- Traffic Violation Management System ---'), nl,
     
-    % User inputs
-    write('Enter License Number (8 digits, e.g. 10023456.): '), read(L_Num),
+    % License input with unlimited retry
+    check_license(L_Num),
+    assertz(current_license(L_Num)),
     
-    (check_license(L_Num) ->
-        write('Enter Vehicle Number (e.g. wp_cad_1234.): '), read(V_Num),
-        write('Enter Vehicle Type (bike, car, bus, lorry.): '), read(V_Type),
-        
-        assertz(current_license(L_Num)),
-        assertz(current_vehicle(V_Num)),
-        assertz(current_type(V_Type)),
-        
-        show_violations
-    ;   
-        write('Access Denied. System Locked.')
-    ).
+    write('Enter Vehicle Number (e.g. wp_cad_1234.): '), read(V_Num),
+    write('Enter Vehicle Type (bike, car, bus, lorry.): '), read(V_Type),
+    
+    assertz(current_vehicle(V_Num)),
+    assertz(current_type(V_Type)),
+    
+    show_violations.
 
 show_violations :-
     nl, write('--- Available Violations List ---'), nl,
@@ -81,13 +84,12 @@ show_violations :-
     write('Enter the Violation Name : '), read(Offense),
     generate_report(Offense).
 
-    % cheking no_helmet violation (its only for bike) ~new added part
-   generate_report(no_helmet) :-
+% checking no_helmet violation (its only for bike)
+generate_report(no_helmet) :-
     current_type(V_Type),
     V_Type \== bike, 
     write('Error: "no_helmet" violation is ONLY for bikes!'), nl,
     show_violations. % (Recursion)
-
 
 generate_report(Offense) :-
     (violation(Offense, BaseFine, Severity, Penalty) ->
