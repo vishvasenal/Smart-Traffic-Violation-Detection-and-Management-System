@@ -18,14 +18,13 @@ vehicle_multiplier(bike, 0.5).
 vehicle_multiplier(light, 1).
 vehicle_multiplier(heavy, 2).
 
-% Violations - violation(Name, Base_Fine, Severity, Credit_Deduction)
+% Violations 
 violation(speeding, 3000, low, 2).
 violation(red_light, 5000, medium, 4).
 violation(drunk_driving, 25000, high, 10).
 violation(no_helmet, 2000, low, 1).
      
-%   Core Logic 
-    %checking license with database
+
 check_license(L_Num) :-
    repeat,
     write('Enter License Number (8 digits, e.g. 10234567.): '), 
@@ -101,6 +100,7 @@ generate_report(no_helmet) :-
     write('Error: "no_helmet" violation is Only for bikes!'), nl,
      show_violations. % (Recursion)
 
+
 generate_report(Offense) :-
     (violation(Offense, BaseFine, Severity, Penalty) ->
         current_type(V_Type),
@@ -115,8 +115,8 @@ generate_report(Offense) :-
         retract(driver_credits(Current)),
         assertz(driver_credits(NewBalance)),
         
-        % Final Report Output
-        nl, write('======= TRAFFIC VIOLATION REPORT ======='), nl,
+        % Final  Output
+        nl, write('******* TRAFFIC VIOLATION REPORT *******'), nl,
         write('License No     : '), current_license(L), write(L), nl,
         write('Vehicle No     : '), current_vehicle(V), write(V), nl,
         write('Vehicle Type   : '), write(V_Type), nl,
