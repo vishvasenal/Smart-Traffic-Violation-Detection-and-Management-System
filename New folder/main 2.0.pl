@@ -4,7 +4,7 @@
 :- dynamic current_license/1.
 :- dynamic driver_credits/1.
 
-               %Facts 
+%Facts 
 
 % Pre stored 5 license numbers (8 digits)
 valid_license(10000000).
