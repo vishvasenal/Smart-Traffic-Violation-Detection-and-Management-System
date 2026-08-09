@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traffic Violation Management System — Sri Lanka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#0F1E36;
+    --navy-800:#152941;
+    --navy-700:#1C3557;
+    --panel:#20395C;
+    --paper:#ECE6D6;
+    --paper-dark:#DCD3B9;
+    --ink:#20241E;
+    --gold:#BE9448;
+    --gold-bright:#D8B26B;
+    --off-white:#EAE6D9;
+    --muted:#9FB0C6;
+    --green:#3E7855;
+    --red:#A5402E;
+    --divider: rgba(190,148,72,0.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(190,148,72,0.08), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(62,120,85,0.08), transparent 45%),
+      var(--navy-900);
+    color:var(--off-white);
+    font-family:'Inter',sans-serif;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:40px 16px 80px;
+  }
+
+  .app{
+    width:100%;
+    max-width:760px;
+  }
+
+  header.masthead{
+    text-align:center;
+    margin-bottom:28px;
+  }
+  header.masthead .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    font-size:11px;
+    color:var(--gold-bright);
+    margin-bottom:6px;
+  }
+  header.masthead h1{
+    font-family:'Zilla Slab',serif;
+    font-weight:700;
+    font-size:clamp(24px,4vw,34px);
+    margin:0;
+    color:var(--off-white);
+    letter-spacing:0.01em;
+  }
+  header.masthead .sub{
+    font-size:13px;
+    color:var(--muted);
+    margin-top:6px;
+  }
+
+  /* ---------------- Credit Gauge ---------------- */
+  .gauge-wrap{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    margin:22px 0 30px;
+    flex-wrap:wrap;
+  }
+  .gauge{
+    width:150px;
+    text-align:center;
+  }
+  .gauge svg{ display:block; margin:0 auto; }
+  .gauge-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-top:4px;
+  }
+  .gauge-value{
+    font-family:'Zilla Slab',serif;
+    font-weight:700;
+    font-size:26px;
+    fill:var(--off-white);
+  }
+  .status-chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    padding:6px 14px;
+    border-radius:999px;
+    border:1px solid var(--divider);
+    color:var(--muted);
+  }
+  .status-chip.valid{ color:var(--green); border-color:rgba(62,120,85,0.5); }
+  .status-chip.invalid{ color:var(--red); border-color:rgba(165,64,46,0.5); }
+
+  /* ---------------- Permit card ---------------- */
+  .permit{
+    position:relative;
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:6px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.45), 0 2px 0 rgba(255,255,255,0.04) inset;
+    overflow:hidden;
+  }
+  .permit::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    border:1px solid rgba(32,36,30,0.12);
+    margin:10px;
+    border-radius:3px;
+  }
+  .permit-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 26px 14px;
+    border-bottom:2px solid rgba(32,36,30,0.15);
+  }
+  .permit-head .file-no{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    color:#5b5644;
+    text-transform:uppercase;
+  }
+  .permit-head .page-title{
+    font-family:'Zilla Slab',serif;
+    font-weight:600;
+    font-size:20px;
+    color:var(--ink);
+  }
+
+  .permit-body{
+    padding:26px;
+    min-height:260px;
+  }
+
+  .field{
+    margin-bottom:18px;
+  }
+  .field label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#5b5644;
+    margin-bottom:6px;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:12px 14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:15px;
+    border:1.5px solid rgba(32,36,30,0.25);
+    border-radius:4px;
+    background:#FBF9F2;
+    color:var(--ink);
+  }
+  .field input:focus, .field select:focus{
+    outline:none;
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(190,148,72,0.2);
+  }
+  .field .hint{
+    font-size:12px;
+    color:#7a745e;
+    margin-top:5px;
+  }
+
+  .violation-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .violation-card{
+    text-align:left;
+    padding:14px;
+    border:1.5px solid rgba(32,36,30,0.2);
+    border-radius:5px;
+    background:#FBF9F2;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    transition:transform .12s ease, border-color .12s ease;
+  }
+  .violation-card:hover{ transform:translateY(-2px); border-color:var(--gold); }
+  .violation-card.selected{ border-color:var(--gold); background:#F6EEDD; }
+  .violation-card .v-name{
+    font-family:'Zilla Slab',serif;
+    font-weight:600;
+    font-size:15px;
+    text-transform:capitalize;
+  }
+  .violation-card .v-meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#7a745e;
+    margin-top:4px;
+  }
+  .violation-card[disabled]{
+    opacity:0.4;
+    cursor:not-allowed;
+  }
+
+  .btn{
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    font-size:13px;
+    padding:13px 22px;
+    border-radius:4px;
+    border:none;
+    cursor:pointer;
+    background:var(--navy-900);
+    color:var(--off-white);
+    transition:background .15s ease, transform .1s ease;
+  }
+  .btn:hover{ background:#0A1728; transform:translateY(-1px); }
+  .btn.gold{ background:var(--gold); color:#2b2007; }
+  .btn.gold:hover{ background:var(--gold-bright); }
+  .btn:disabled{ opacity:0.45; cursor:not-allowed; transform:none; }
+  .btn.ghost{
+    background:transparent;
+    color:#5b5644;
+    border:1.5px solid rgba(32,36,30,0.25);
+  }
+
+  .actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:6px;
+  }
+
+  .error-banner{
+    background:rgba(165,64,46,0.12);
+    border:1px solid rgba(165,64,46,0.4);
+    color:#7a2c1d;
+    padding:10px 14px;
+    border-radius:4px;
+    font-size:13px;
+    margin-bottom:16px;
+  }
+
+  /* ---------------- Seal stamp ---------------- */
+  .seal{
+    position:absolute;
+    top:18px;
+    right:26px;
+    width:76px;
+    height:76px;
+    opacity:0;
+    transform:scale(1.6) rotate(-14deg);
+    pointer-events:none;
+  }
+  .seal.stamp{
+    animation: stampDown .38s cubic-bezier(.2,.9,.3,1.2) forwards;
+  }
+  @keyframes stampDown{
+    0%{ opacity:0; transform:scale(1.8) rotate(-14deg); }
+    60%{ opacity:1; transform:scale(0.94) rotate(-14deg); }
+    100%{ opacity:0.92; transform:scale(1) rotate(-14deg); }
+  }
+
+  /* ---------------- Report ---------------- */
+  .report-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px 22px;
+    margin-bottom:20px;
+  }
+  .report-grid .item label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#7a745e;
+    margin-bottom:3px;
+  }
+  .report-grid .item .val{
+    font-family:'Zilla Slab',serif;
+    font-weight:600;
+    font-size:17px;
+    text-transform:capitalize;
+  }
+  .report-grid .item .val.mono{ font-family:'IBM Plex Mono',monospace; text-transform:none; }
+  .fine-line{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-top:2px solid rgba(32,36,30,0.15);
+    padding-top:16px;
+    margin-top:6px;
+  }
+  .fine-line .fine-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#5b5644;
+  }
+  .fine-line .fine-amount{
+    font-family:'Zilla Slab',serif;
+    font-weight:700;
+    font-size:30px;
+    color:var(--red);
+  }
+  .status-line{
+    margin-top:14px;
+    padding:12px 14px;
+    border-radius:4px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    letter-spacing:0.04em;
+  }
+  .status-line.valid{ background:rgba(62,120,85,0.12); color:#245536; }
+  .status-line.invalid{ background:rgba(165,64,46,0.12); color:#7a2c1d; }
+
+  .steps{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin-bottom:18px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+  }
+  .steps .step{
+    color:var(--muted);
+    padding-bottom:4px;
+    border-bottom:2px solid transparent;
+  }
+  .steps .step.active{ color:var(--gold-bright); border-color:var(--gold-bright); }
+  .steps .step.done{ color:var(--green); }
+  .steps .sep{ color:rgba(255,255,255,0.15); }
+
+  footer.note{
+    text-align:center;
+    color:var(--muted);
+    font-size:11.5px;
+    margin-top:20px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="masthead">
+    <div class="eyebrow">Sri Lanka &middot; Department of Motor Traffic</div>
+    <h1>Traffic Violation Management System</h1>
+    <div class="sub">Checkpoint console — license verification, vehicle registration &amp; violation filing</div>
+  </header>
+
+  <div class="gauge-wrap">
+    <div class="gauge">
+      <svg id="gaugeSvg" width="150" height="90" viewBox="0 0 150 90"></svg>
+      <div class="gauge-label">Credit balance</div>
+    </div>
+    <div id="statusChip" class="status-chip">— awaiting session —</div>
+  </div>
+
+  <div class="steps" id="steps">
+    <span class="step" data-step="license">01 License</span><span class="sep">/</span>
+    <span class="step" data-step="vehicle">02 Vehicle</span><span class="sep">/</span>
+    <span class="step" data-step="violation">03 Violation</span><span class="sep">/</span>
+    <span class="step" data-step="report">04 Report</span>
+  </div>
+
+  <div class="permit" id="permit">
+    <svg id="seal" class="seal" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="46" fill="none" stroke="#A5402E" stroke-width="3"/>
+      <circle cx="50" cy="50" r="38" fill="none" stroke="#A5402E" stroke-width="1.5"/>
+      <text x="50" y="46" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#A5402E" font-weight="600" id="sealTop">RECORDED</text>
+      <text x="50" y="58" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7" fill="#A5402E" id="sealBottom">DMT · SRI LANKA</text>
+    </svg>
+    <div class="permit-head">
+      <span class="file-no" id="fileNo">FILE NO. —</span>
+      <span class="page-title" id="pageTitle">License Verification</span>
+    </div>
+    <div class="permit-body" id="permitBody">
+      <!-- injected per step -->
+    </div>
+  </div>
+
+  <footer class="note">Backend: SWI-Prolog HTTP server &middot; Endpoint: /api/*</footer>
+</div>
+
+<script>
+const API = '';
+let session = { license: null, vehicleNum: null, vehicleType: null, credits: 10 };
+let currentStep = 'license';
+let fileCounter = Math.floor(1000 + Math.random()*8999);
+
+const VIOLATION_META = {
+  speeding:      { fine: 3000,  severity: 'low',    penalty: 2 },
+  red_light:     { fine: 5000,  severity: 'medium', penalty: 4 },
+  drunk_driving: { fine: 25000, severity: 'high',   penalty: 10 },
+  no_helmet:     { fine: 2000,  severity: 'low',    penalty: 1 },
+};
+
+function el(html){
+  const t = document.createElement('template');
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild;
+}
+
+function setStep(step){
+  currentStep = step;
+  document.querySelectorAll('.steps .step').forEach(s=>{
+    s.classList.remove('active','done');
+    const order = ['license','vehicle','violation','report'];
+    if(s.dataset.step === step) s.classList.add('active');
+    else if(order.indexOf(s.dataset.step) < order.indexOf(step)) s.classList.add('done');
+  });
+  document.getElementById('fileNo').textContent = 'FILE NO. TRF-' + fileCounter;
+}
+
+function drawGauge(credits){
+  const svg = document.getElementById('gaugeSvg');
+  const max = 10;
+  const clamped = Math.max(0, Math.min(max, credits));
+  const pct = clamped / max;
+  const angle = Math.PI - (pct * Math.PI); // from 180deg to 0deg
+  const cx = 75, cy = 78, r = 60;
+  const x = cx + r * Math.cos(angle);
+  const y = cy - r * Math.sin(angle);
+  const color = credits > 5 ? '#3E7855' : (credits > 0 ? '#BE9448' : '#A5402E');
+
+  svg.innerHTML = `
+    <path d="M 15 78 A 60 60 0 0 1 135 78" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M 15 78 A 60 60 0 0 1 ${x} ${y}" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="4" fill="${color}"/>
+    <line x1="${cx}" y1="${cy}" x2="${cx + 46*Math.cos(angle)}" y2="${cy - 46*Math.sin(angle)}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+    <text x="75" y="55" text-anchor="middle" class="gauge-value" font-size="24">${credits}</text>
+  `;
+}
+
+function updateStatusChip(status, message){
+  const chip = document.getElementById('statusChip');
+  chip.textContent = message || status;
+  chip.className = 'status-chip' + (status === 'VALID' ? ' valid' : (status === 'INVALID' ? ' invalid' : ''));
+}
+
+function stampSeal(top, bottom){
+  const seal = document.getElementById('seal');
+  document.getElementById('sealTop').textContent = top;
+  document.getElementById('sealBottom').textContent = bottom;
+  seal.classList.remove('stamp');
+  void seal.offsetWidth; // restart animation
+  seal.classList.add('stamp');
+}
+
+async function api(path, body){
+  const opts = body !== undefined
+    ? { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }
+    : { method:'GET' };
+  const res = await fetch(API + path, opts);
+  return res.json();
+}
+
+async function refreshStatus(){
+  try{
+    const s = await api('/api/status');
+    session.credits = s.credits;
+    drawGauge(s.credits);
+    updateStatusChip(s.status, s.status_message);
+  }catch(e){ /* server not reachable yet */ }
+}
+
+/* ---------------- Step renderers ---------------- */
+
+function renderLicenseStep(errorMsg){
+  document.getElementById('pageTitle').textContent = 'License Verification';
+  const body = document.getElementById('permitBody');
+  body.innerHTML = '';
+  if(errorMsg) body.appendChild(el(`<div class="error-banner">${errorMsg}</div>`));
+
+  body.appendChild(el(`
+    <div class="field">
+      <label>Driving license number</label>
+      <input type="text" id="licenseInput" placeholder="e.g. 10000000" inputmode="numeric" maxlength="8">
+      <div class="hint">Must be a registered 8-digit Sri Lankan license number.</div>
+    </div>
+  `));
+  body.appendChild(el(`
+    <div class="actions">
+      <button class="btn ghost" id="resetBtn">Reset session</button>
+      <button class="btn gold" id="verifyBtn">Verify license</button>
+    </div>
+  `));
+
+  document.getElementById('verifyBtn').onclick = submitLicense;
+  document.getElementById('licenseInput').addEventListener('keydown', e=>{ if(e.key==='Enter') submitLicense(); });
+  document.getElementById('resetBtn').onclick = resetSession;
+  setStep('license');
+}
+
+async function submitLicense(){
+  const val = document.getElementById('licenseInput').value.trim();
+  const num = Number(val);
+  if(!val || !Number.isInteger(num)){
+    renderLicenseStep('Invalid Input: license number must be numeric.');
+    return;
+  }
+  const res = await api('/api/license', { license: num });
+  if(res.valid){
+    session.license = num;
+    stampSeal('VERIFIED', 'DMT · SRI LANKA');
+    renderVehicleStep();
+  }else{
+    renderLicenseStep(res.message);
+  }
+  refreshStatus();
+}
+
+function renderVehicleStep(errorMsg){
+  document.getElementById('pageTitle').textContent = 'Vehicle Registration';
+  const body = document.getElementById('permitBody');
+  body.innerHTML = '';
+  if(errorMsg) body.appendChild(el(`<div class="error-banner">${errorMsg}</div>`));
+
+  body.appendChild(el(`
+    <div class="field">
+      <label>Vehicle number</label>
+      <input type="text" id="vehicleNumInput" placeholder="e.g. WP CAB 1234">
+    </div>
+  `));
+  body.appendChild(el(`
+    <div class="field">
+      <label>Vehicle type</label>
+      <select id="vehicleTypeInput">
+        <option value="">Select type…</option>
+        <option value="bike">Bike (light)</option>
+        <option value="light">Light vehicle</option>
+        <option value="heavy">Heavy vehicle</option>
+      </select>
+    </div>
+  `));
+  body.appendChild(el(`
+    <div class="actions">
+      <button class="btn ghost" id="backBtn">Back</button>
+      <button class="btn gold" id="registerBtn">Register vehicle</button>
+    </div>
+  `));
+
+  document.getElementById('registerBtn').onclick = submitVehicle;
+  document.getElementById('backBtn').onclick = ()=>renderLicenseStep();
+  setStep('vehicle');
+}
+
+async function submitVehicle(){
+  const vnum = document.getElementById('vehicleNumInput').value.trim();
+  const vtype = document.getElementById('vehicleTypeInput').value;
+  if(!vnum){ renderVehicleStep('Please enter a vehicle number.'); return; }
+  if(!vtype){ renderVehicleStep('Please select a vehicle type.'); return; }
+
+  const res = await api('/api/vehicle', { vehicle_num: vnum, vehicle_type: vtype });
+  if(res.valid){
+    session.vehicleNum = vnum;
+    session.vehicleType = vtype;
+    renderViolationStep();
+  }else{
+    renderVehicleStep(res.message);
+  }
+}
+
+function renderViolationStep(errorMsg){
+  document.getElementById('pageTitle').textContent = 'Log a Violation';
+  const body = document.getElementById('permitBody');
+  body.innerHTML = '';
+  if(errorMsg) body.appendChild(el(`<div class="error-banner">${errorMsg}</div>`));
+
+  const grid = el(`<div class="violation-grid"></div>`);
+  Object.entries(VIOLATION_META).forEach(([name, meta])=>{
+    const disabled = (name === 'no_helmet' && session.vehicleType !== 'bike');
+    const card = el(`
+      <button class="violation-card" ${disabled?'disabled':''} data-name="${name}">
+        <div class="v-name">${name.replace('_',' ')}</div>
+        <div class="v-meta">Rs. ${meta.fine.toLocaleString()} base &middot; ${meta.severity} &middot; −${meta.penalty} credits</div>
+      </button>
+    `);
+    if(!disabled){
+      card.onclick = ()=> submitViolation(name);
+    }
+    grid.appendChild(card);
+  });
+  body.appendChild(grid);
+
+  body.appendChild(el(`
+    <div class="actions">
+      <button class="btn ghost" id="backBtn">Back</button>
+    </div>
+  `));
+  document.getElementById('backBtn').onclick = ()=>renderVehicleStep();
+  setStep('violation');
+}
+
+async function submitViolation(name){
+  const res = await api('/api/violation', { offense: name });
+  if(res.success){
+    stampSeal('RECORD FILED', 'DMT · SRI LANKA');
+    renderReportStep(res);
+  }else{
+    renderViolationStep(res.message);
+  }
+  refreshStatus();
+}
+
+function renderReportStep(r){
+  document.getElementById('pageTitle').textContent = 'Violation Report';
+  const body = document.getElementById('permitBody');
+  body.innerHTML = '';
+
+  body.appendChild(el(`
+    <div class="report-grid">
+      <div class="item"><label>License No.</label><div class="val mono">${r.license}</div></div>
+      <div class="item"><label>Vehicle No.</label><div class="val mono">${r.vehicle}</div></div>
+      <div class="item"><label>Vehicle type</label><div class="val">${r.vehicle_type}</div></div>
+      <div class="item"><label>Violation</label><div class="val">${r.offense.replace('_',' ')}</div></div>
+      <div class="item"><label>Severity</label><div class="val">${r.severity}</div></div>
+      <div class="item"><label>Credits deducted</label><div class="val mono">−${r.penalty}</div></div>
+    </div>
+    <div class="fine-line">
+      <span class="fine-label">Calculated fine</span>
+      <span class="fine-amount">Rs. ${Number(r.fine).toLocaleString()}</span>
+    </div>
+    <div class="status-line ${r.status === 'VALID' ? 'valid' : 'invalid'}">
+      ${r.status_message} Remaining balance: ${r.new_balance} credits.
+    </div>
+  `));
+
+  body.appendChild(el(`
+    <div class="actions">
+      <button class="btn ghost" id="anotherBtn">File another violation</button>
+      <button class="btn" id="newSessionBtn">New driver / session</button>
+    </div>
+  `));
+  document.getElementById('anotherBtn').onclick = ()=>renderViolationStep();
+  document.getElementById('newSessionBtn').onclick = resetSession;
+  setStep('report');
+}
+
+async function resetSession(){
+  await api('/api/start', {});
+  session = { license:null, vehicleNum:null, vehicleType:null, credits:10 };
+  fileCounter = Math.floor(1000 + Math.random()*8999);
+  renderLicenseStep();
+  refreshStatus();
+}
+
+/* ---------------- Init ---------------- */
+(async function init(){
+  drawGauge(10);
+  renderLicenseStep();
+  await refreshStatus();
+})();
+</script>
+</body>
+</html>
